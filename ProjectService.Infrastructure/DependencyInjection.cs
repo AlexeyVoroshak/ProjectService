@@ -45,7 +45,16 @@ public static class DependencyInjection
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IOutboxRepository, OutboxRepository>();
 
-        // Регистрируем Kafka Outbox Publisher как фоновую службу
+        // Регистрируем менеджер Docker Kafka (запускается первым — проверяет и запускает кластер)
+        var dockerKafkaOptions = new DockerKafkaOptions();
+        configuration.GetSection("DockerKafka").Bind(dockerKafkaOptions);
+        services.AddSingleton(dockerKafkaOptions);
+        //services.AddHostedService<DockerKafkaManager>();
+
+        // Регистрируем инициализатор топиков Kafka (запускается после проверки Docker)
+        services.AddHostedService<KafkaTopicInitializer>();
+
+        // Регистрируем Kafka Outbox Publisher как фоновую службу (запускается после инициализации топиков)
         var kafkaOptions = new KafkaOutboxOptions();
         configuration.GetSection("KafkaOutbox").Bind(kafkaOptions);
         services.AddSingleton(kafkaOptions);

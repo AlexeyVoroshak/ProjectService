@@ -19,7 +19,7 @@ public class KafkaOutboxOptions
     /// <summary>
     /// Адрес брокера Kafka.
     /// </summary>
-    public string BootstrapServers { get; set; } = "localhost:9092";
+    public string BootstrapServers { get; set; } = "localhost:29092";
 
     /// <summary>
     /// Имя топика по умолчанию для публикации событий.
