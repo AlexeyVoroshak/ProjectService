@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectService.Domain.Entities;
 using ProjectService.Domain.Repositories;
-using ProjectService.Infrastructure.Data;
 
 namespace ProjectService.Infrastructure.Repositories;
 
@@ -10,15 +9,15 @@ namespace ProjectService.Infrastructure.Repositories;
 /// </summary>
 public class ProjectRepository : IProjectRepository
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
     /// <summary>
-    /// Конструктор с внедрением зависимости DbContext.
+    /// Конструктор с внедрением зависимости IUnitOfWork.
     /// </summary>
-    /// <param name="context">Контекст EF Core</param>
-    public ProjectRepository(ApplicationDbContext context)
+    /// <param name="unitOfWork">Unit of Work</param>
+    public ProjectRepository(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -26,7 +25,7 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     public async Task<Project?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Projects
+        return await _unitOfWork.Set<Project>()
             .Include(p => p.Tasks)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
@@ -36,7 +35,7 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     public async Task<IEnumerable<Project>> GetAllAsync(int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
-        return await _context.Projects
+        return await _unitOfWork.Set<Project>()
             .Include(p => p.Tasks)
             .Skip(skip)
             .Take(take)
@@ -49,7 +48,7 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     public void Add(Project project)
     {
-        _context.Projects.Add(project);
+        _unitOfWork.Set<Project>().Add(project);
     }
 
     /// <summary>
@@ -57,7 +56,7 @@ public class ProjectRepository : IProjectRepository
     /// </summary>
     public void Update(Project project)
     {
-        _context.Projects.Update(project);
+        _unitOfWork.Set<Project>().Update(project);
     }
 
     /// <summary>
@@ -67,7 +66,7 @@ public class ProjectRepository : IProjectRepository
     {
         var project = new Project();
         project.Id = id;
-        _context.Projects.Attach(project);
-        _context.Projects.Remove(project);
+        _unitOfWork.Set<Project>().Attach(project);
+        _unitOfWork.Set<Project>().Remove(project);
     }
 }

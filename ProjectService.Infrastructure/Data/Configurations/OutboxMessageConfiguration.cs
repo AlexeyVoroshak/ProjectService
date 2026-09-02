@@ -45,7 +45,8 @@ public static class OutboxMessageConfiguration
         // Настраиваем свойство Version для оптимистичной блокировки
         builder.Property(o => o.Version)
             .IsConcurrencyToken()
-            .ValueGeneratedOnAddOrUpdate();
+            .ValueGeneratedOnAddOrUpdate()
+            .HasDefaultValue(1);
 
         // Создаём индекс для эффективного поиска неподтверждённых сообщений
         builder.HasIndex(o => new { o.Status, o.CreatedAt })

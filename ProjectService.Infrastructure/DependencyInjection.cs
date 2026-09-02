@@ -22,7 +22,7 @@ public static class DependencyInjection
     /// <returns>Ссылка на IServiceCollection для цепочки вызовов</returns>
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Регистрируем DbContext для PostgreSQL
+        // Регистрируем DbContext для PostgreSQL (Scoped)
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found");
 
@@ -38,12 +38,12 @@ public static class DependencyInjection
                     errorCodesToAdd: null);
             }));
 
-        // Регистрируем абстрактный ApplicationDBContext для pipeline behavior
-        services.AddScoped<ApplicationDBContext, ApplicationDbContext>();
+        // Регистрируем Unit of Work с явным указанием зависимости
+        services.AddScoped<IUnitOfWork>(sp => new UnitOfWork(sp.GetRequiredService<ApplicationDbContext>()));
 
-        // Регистрируем репозитории (Transient — создаются каждый раз при запросе)
-        services.AddTransient<IProjectRepository, ProjectRepository>();
-        services.AddTransient<IOutboxRepository, OutboxRepository>();
+        // Регистрируем репозитории (Scoped — создаются в рамках одного запроса)
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IOutboxRepository, OutboxRepository>();
 
         // Регистрируем Kafka Outbox Publisher как фоновую службу
         var kafkaOptions = new KafkaOutboxOptions();

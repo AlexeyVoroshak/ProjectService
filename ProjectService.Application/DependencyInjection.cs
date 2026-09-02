@@ -23,10 +23,11 @@ public static class DependencyInjection
             // Указываем сборку, в которой находятся handlers
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
 
-            // Регистрируем pipeline behavior для перехвата доменных событий
-            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DomainEventPublisherBehavior<,>));
             // Сохраняем все изменения (сущности + Outbox сообщения) после выполнения handler
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(SaveChangesPipelineBehavior<,>));
+
+            // Регистрируем pipeline behavior для перехвата доменных событий (ДО SaveChanges)
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DomainEventPublisherBehavior<,>));
         });
 
         // Регистрируем FluentValidation — валидаторы для команд

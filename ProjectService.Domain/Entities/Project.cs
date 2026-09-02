@@ -66,6 +66,7 @@ public class Project : BaseEntity
         Name = name;
         Description = description;
         UpdateTimestamp();
+        AddDomainEvent(new ProjectUpdatedEvent(this));
     }
 
     /// <summary>
@@ -127,7 +128,7 @@ public class Project : BaseEntity
     /// <summary>
     /// Очищает список доменных событий после обработки.
     /// </summary>
-    public void ClearDomainEvents()
+    public override void ClearDomainEvents()
     {
         _domainEvents.Clear();
     }

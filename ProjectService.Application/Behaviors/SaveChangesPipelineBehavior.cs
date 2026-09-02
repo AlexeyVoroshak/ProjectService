@@ -1,5 +1,6 @@
 using MediatR;
 using ProjectService.Application.Services;
+using ProjectService.Domain.Repositories;
 
 namespace ProjectService.Application.Behaviors;
 
@@ -18,11 +19,11 @@ public class SaveChangesPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
     where TResponse : notnull
 {
-    private readonly ApplicationDBContext _dbContext;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SaveChangesPipelineBehavior(ApplicationDBContext dbContext)
+    public SaveChangesPipelineBehavior(IUnitOfWork unitOfWork)
     {
-        _dbContext = dbContext;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<TResponse> Handle(
@@ -31,7 +32,7 @@ public class SaveChangesPipelineBehavior<TRequest, TResponse>
         CancellationToken cancellationToken)
     {
         var response = await next();
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return response;
     }
 }

@@ -1,9 +1,4 @@
 <Solution>
-  <Folder Name="/Tests/">
-    <Project Path="ProjectService.Application.Tests/ProjectService.Application.Tests.csproj" />
-    <Project Path="ProjectService.Domain.Tests/ProjectService.Domain.Tests.csproj" />
-    <Project Path="ProjectService.Integration.Tests/ProjectService.Integration.Tests.csproj" />
-  </Folder>
   <Project Path="ProjectService.API/ProjectService.API.csproj" />
   <Project Path="ProjectService.Application/ProjectService.Application.csproj" />
   <Project Path="ProjectService.Domain/ProjectService.Domain.csproj" />

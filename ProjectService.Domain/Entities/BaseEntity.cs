@@ -43,4 +43,13 @@ public abstract class BaseEntity
     {
         UpdatedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Очищает доменные события после публикации.
+    /// Переопределяется в наследниках для очистки коллекции событий.
+    /// </summary>
+    public virtual void ClearDomainEvents()
+    {
+        // Базовая реализация — ничего не делает
+    }
 }

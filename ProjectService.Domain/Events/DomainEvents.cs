@@ -9,6 +9,11 @@ namespace ProjectService.Domain.Events;
 public record ProjectCreatedEvent(Project Project) : IDomainEvent;
 
 /// <summary>
+/// Событие обновления проекта.
+/// </summary>
+public record ProjectUpdatedEvent(Project Project) : IDomainEvent;
+
+/// <summary>
 /// Событие архивирования проекта.
 /// </summary>
 public record ProjectArchivedEvent(Project Project) : IDomainEvent;

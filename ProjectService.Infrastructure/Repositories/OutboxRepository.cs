@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectService.Domain.Entities;
 using ProjectService.Domain.Repositories;
-using ProjectService.Infrastructure.Data;
 
 namespace ProjectService.Infrastructure.Repositories;
 
@@ -11,15 +10,15 @@ namespace ProjectService.Infrastructure.Repositories;
 /// </summary>
 public class OutboxRepository : IOutboxRepository
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
     /// <summary>
-    /// Конструктор с внедрением зависимости DbContext.
+    /// Конструктор с внедрением зависимости IUnitOfWork.
     /// </summary>
-    /// <param name="context">Контекст EF Core</param>
-    public OutboxRepository(ApplicationDbContext context)
+    /// <param name="unitOfWork">Unit of Work</param>
+    public OutboxRepository(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -28,7 +27,7 @@ public class OutboxRepository : IOutboxRepository
     /// </summary>
     public async Task SaveAsync(OutboxMessage message, CancellationToken cancellationToken = default)
     {
-        await _context.OutboxMessages.AddAsync(message, cancellationToken);
+        await _unitOfWork.Set<OutboxMessage>().AddAsync(message, cancellationToken);
     }
 
     /// <summary>
@@ -37,7 +36,7 @@ public class OutboxRepository : IOutboxRepository
     /// </summary>
     public async Task<IEnumerable<OutboxMessage>> GetPendingAsync(int batchSize = 10, CancellationToken cancellationToken = default)
     {
-        return await _context.OutboxMessages
+        return await _unitOfWork.Set<OutboxMessage>()
             .Where(m => m.Status == OutboxMessageStatus.Pending)
             .OrderBy(m => m.CreatedAt)
             .Take(batchSize)
@@ -50,7 +49,7 @@ public class OutboxRepository : IOutboxRepository
     /// </summary>
     public async Task MarkAsPublishedAsync(IEnumerable<Guid> messageIds, CancellationToken cancellationToken = default)
     {
-        var messages = await _context.OutboxMessages
+        var messages = await _unitOfWork.Set<OutboxMessage>()
             .Where(m => messageIds.Contains(m.Id))
             .ToListAsync(cancellationToken);
 
@@ -67,7 +66,7 @@ public class OutboxRepository : IOutboxRepository
     /// </summary>
     public async Task MarkAsFailedAsync(Guid messageId, string errorMessage, CancellationToken cancellationToken = default)
     {
-        var message = await _context.OutboxMessages
+        var message = await _unitOfWork.Set<OutboxMessage>()
             .FirstOrDefaultAsync(m => m.Id == messageId, cancellationToken);
 
         if (message != null)

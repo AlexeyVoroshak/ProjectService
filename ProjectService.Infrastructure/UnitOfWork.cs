@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ProjectService.Application.Services;
+using Microsoft.EntityFrameworkCore.Storage;
 using ProjectService.Domain.Repositories;
+using ProjectService.Infrastructure.Data;
 
 namespace ProjectService.Infrastructure;
 
@@ -11,7 +12,7 @@ namespace ProjectService.Infrastructure;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
-    private IDbContextTransaction _transaction;
+    private IDbContextTransaction? _transaction;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -23,6 +24,11 @@ public class UnitOfWork : IUnitOfWork
     /// </summary>
     public DbSet<T> Set<T>() where T : class
         => _context.Set<T>();
+
+    /// <summary>
+    /// Получает DbContext для доступа к ChangeTracker.
+    /// </summary>
+    public DbContext DbContext => _context;
 
     /// <summary>
     /// Сохраняет все изменения в БД.
@@ -48,7 +54,10 @@ public class UnitOfWork : IUnitOfWork
         try
         {
             await _context.SaveChangesAsync(cancellationToken);
-            await _transaction.CommitAsync(cancellationToken);
+            if (_transaction != null)
+            {
+                await _transaction.CommitAsync(cancellationToken);
+            }
         }
         catch
         {
@@ -62,7 +71,10 @@ public class UnitOfWork : IUnitOfWork
     /// </summary>
     public async Task RollbackAsync()
     {
-        await _transaction.RollbackAsync();
+        if (_transaction != null)
+        {
+            await _transaction.RollbackAsync();
+        }
     }
 
     /// <summary>

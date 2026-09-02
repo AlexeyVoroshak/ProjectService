@@ -147,7 +147,7 @@ public class TaskEntity : BaseEntity
     /// <summary>
     /// Очищает список доменных событий после обработки.
     /// </summary>
-    public void ClearDomainEvents()
+    public override void ClearDomainEvents()
     {
         _domainEvents.Clear();
     }

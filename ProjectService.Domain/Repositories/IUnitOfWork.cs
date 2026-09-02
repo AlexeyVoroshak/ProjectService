@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ProjectService.Domain.Repositories;
 
@@ -12,6 +13,11 @@ public interface IUnitOfWork : IDisposable
     /// Получает DbSet для работы с сущностями типа T.
     /// </summary>
     DbSet<T> Set<T>() where T : class;
+
+    /// <summary>
+    /// Получает DbContext для доступа к ChangeTracker и другим функциям.
+    /// </summary>
+    DbContext DbContext { get;}
 
     /// <summary>
     /// Сохраняет все изменения в БД.
