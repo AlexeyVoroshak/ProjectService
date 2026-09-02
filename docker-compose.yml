@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # ============================================================
+  # PostgreSQL — основная база данных
+  # ============================================================
+  db:
+    image: postgres:16-alpine
+    container_name: projectservice-db
+    environment:
+      POSTGRES_DB: projectservice
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - projectservice-network
+
+  # ============================================================
+  # Zookeeper — необходим для Kafka
+  # ============================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: projectservice-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - projectservice-network
+
+  # ============================================================
+  # Kafka — брокер сообщений для Outbox Pattern
+  # ============================================================
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: projectservice-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - projectservice-network
+
+  # ============================================================
+  # ProjectService.API — основное веб-приложение
+  # ============================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: projectservice-api
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=projectservice;Username=postgres;Password=postgres
+      - KafkaOutbox__BootstrapServers=kafka:9092
+    networks:
+      - projectservice-network
+
+# ============================================================
+# Том для данных PostgreSQL
+# ============================================================
+volumes:
+  postgres_data:
+
+# ============================================================
+# Сеть для контейнеров
+# ============================================================
+networks:
+  projectservice-network:
+    driver: bridge

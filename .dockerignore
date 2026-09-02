@@ -1,0 +1,13 @@
+**/.git
+**/.gitignore
+**/.dockerignore
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+**/.vs/
+**/node_modules/
+**/logs/
+**/*.log
+docker-compose.override.yml
+.dockerignore
