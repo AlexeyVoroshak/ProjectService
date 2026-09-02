@@ -26,7 +26,7 @@ public record ProjectDto
     /// <summary>
     /// Статус проекта.
     /// </summary>
-    public ProjectStatus Status { get; init; }
+    public required ProjectStatus Status { get; init; }
 
     /// <summary>
     /// Дата и время создания.

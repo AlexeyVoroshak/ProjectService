@@ -31,12 +31,12 @@ public record TaskDto
     /// <summary>
     /// Статус задачи.
     /// </summary>
-    public DomainEnums.TaskStatus Status { get; init; }
+    public int Status { get; init; }
 
     /// <summary>
     /// Приоритет задачи.
     /// </summary>
-    public DomainEnums.TaskPriority Priority { get; init; }
+    public int Priority { get; init; }
 
     /// <summary>
     /// Дата и время создания.
@@ -61,8 +61,8 @@ public record TaskDto
             ProjectId = task.ProjectId,
             Title = task.Title,
             Description = task.Description,
-            Status = (DomainEnums.TaskStatus)task.Status,
-            Priority = (DomainEnums.TaskPriority)task.Priority,
+            Status = task.Status,
+            Priority = task.Priority,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt
         };

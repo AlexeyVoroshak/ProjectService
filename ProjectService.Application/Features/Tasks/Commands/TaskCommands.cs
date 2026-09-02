@@ -7,7 +7,7 @@ namespace ProjectService.Application.Features.Tasks.Commands;
 /// <summary>
 /// Команда создания новой задачи.
 /// </summary>
-public record CreateTaskCommand(Guid ProjectId, string Title, string? Description = null, DomainEnums.TaskPriority Priority = DomainEnums.TaskPriority.Medium) : IRequest<TaskDto>;
+public record CreateTaskCommand(Guid ProjectId, string Title, DomainEnums.TaskPriority Priority, string? Description = null) : IRequest<TaskDto>;
 
 /// <summary>
 /// Команда обновления деталей задачи.

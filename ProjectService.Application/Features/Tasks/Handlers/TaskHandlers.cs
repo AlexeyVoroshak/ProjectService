@@ -29,7 +29,7 @@ public class CreateTaskHandler : IRequestHandler<CreateTaskCommand, TaskDto>
         var project = await _projectRepository.GetByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Проект с ID {request.ProjectId} не найден");
 
-        project.AddTask(request.Title, request.Description, request.Priority);
+        project.AddTask(request.Title, request.Priority, request.Description);
 
         return TaskDto.FromEntity(project.Tasks.Last());
     }

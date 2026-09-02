@@ -104,7 +104,7 @@ public class Project : BaseEntity
     /// <param name="title">Название задачи</param>
     /// <param name="description">Описание задачи</param>
     /// <param name="priority">Приоритет задачи</param>
-    public void AddTask(string title, string? description = null, TaskPriority priority = TaskPriority.Medium)
+    public void AddTask(string title, TaskPriority priority, string? description = null)
     {
         var task = new TaskEntity(this, title, description, priority);
         _tasks.Add(task);
