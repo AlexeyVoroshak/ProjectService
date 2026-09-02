@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ProjectService.Domain.Entities;
+using ProjectService.Domain.Enums;
 
 namespace ProjectService.Infrastructure.Data.Configurations;
 
@@ -38,12 +39,16 @@ public static class TaskEntityConfiguration
         // Настраиваем свойство Status — обязательное, хранится как integer
         builder.Property(t => t.Status)
             .IsRequired()
-            .HasConversion<int>();
+            .HasConversion(
+                v => v.Value,
+                v => Domain.Enums.TaskStatus.FromValue(v));
 
         // Настраиваем свойство Priority — обязательное, хранится как integer
         builder.Property(t => t.Priority)
             .IsRequired()
-            .HasConversion<int>();
+            .HasConversion(
+                v => v.Value,
+                v => TaskPriority.FromValue(v));
 
         // Настраиваем свойство CreatedAt
         builder.Property(t => t.CreatedAt)

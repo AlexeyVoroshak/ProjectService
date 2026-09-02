@@ -1,10 +1,17 @@
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Linq;
 using ProjectService.Application;
 using ProjectService.Infrastructure;
 using ProjectService.Infrastructure.Data;
 using ProjectService.Infrastructure.Messaging;
 using Serilog;
+
+// ============================================================
+// UTF-8 кодировка для корректного отображения русского текста
+// ============================================================
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("ru-RU");
 
 var builder = WebApplication.CreateBuilder(args);
 

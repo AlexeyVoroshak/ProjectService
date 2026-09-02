@@ -56,15 +56,18 @@ public class OutboxMessage : BaseEntity
     /// <returns>Экземпляр OutboxMessage</returns>
     public static OutboxMessage Create(string aggregateId, string eventType, string payload)
     {
-        var message = new OutboxMessage
+        return new OutboxMessage
         {
             AggregateId = aggregateId,
             EventType = eventType,
             Payload = payload,
             Status = OutboxMessageStatus.Pending
         };
-        message.SetInitialValues();
-        return message;
+    }
+
+    public override void ClearDomainEvents()
+    {
+        // OutboxMessage не имеет доменных событий, поэтому метод оставлен пустым.
     }
 }
 

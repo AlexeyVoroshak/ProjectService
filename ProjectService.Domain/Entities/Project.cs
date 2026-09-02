@@ -35,7 +35,6 @@ public class Project : BaseEntity
     /// </summary>
     public Project()
     {
-        SetInitialValues();
         Status = ProjectStatus.Active;
         Name = string.Empty;
     }
@@ -47,7 +46,6 @@ public class Project : BaseEntity
     /// <param name="description">Описание проекта</param>
     public Project(string name, string? description = null)
     {
-        SetInitialValues();
         Name = name;
         Description = description;
         Status = ProjectStatus.Active;
@@ -65,7 +63,6 @@ public class Project : BaseEntity
     {
         Name = name;
         Description = description;
-        UpdateTimestamp();
         AddDomainEvent(new ProjectUpdatedEvent(this));
     }
 
@@ -75,7 +72,6 @@ public class Project : BaseEntity
     public void Archive()
     {
         Status = ProjectStatus.Archived;
-        UpdateTimestamp();
         AddDomainEvent(new ProjectArchivedEvent(this));
     }
 
@@ -85,7 +81,6 @@ public class Project : BaseEntity
     public void Activate()
     {
         Status = ProjectStatus.Active;
-        UpdateTimestamp();
     }
 
     /// <summary>
@@ -94,7 +89,6 @@ public class Project : BaseEntity
     public void Delete()
     {
         Status = ProjectStatus.Deleted;
-        UpdateTimestamp();
         AddDomainEvent(new ProjectDeletedEvent(this));
     }
 

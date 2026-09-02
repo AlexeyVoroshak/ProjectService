@@ -11,6 +11,12 @@ namespace ProjectService.Domain.Entities;
 public abstract class BaseEntity
 {
     /// <summary>
+    /// Очищает доменные события после публикации.
+    /// Переопределяется в наследниках для очистки коллекции событий.
+    /// </summary>
+    public abstract void ClearDomainEvents();
+
+    /// <summary>
     /// Уникальный идентификатор сущности (GUID).
     /// </summary>
     public Guid Id { get; protected internal set; }
@@ -18,38 +24,10 @@ public abstract class BaseEntity
     /// <summary>
     /// Дата и время создания записи.
     /// </summary>
-    public DateTime CreatedAt { get; protected internal set; }
+    public DateTime CreatedAt { get; protected internal set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Дата и время последнего обновления.
     /// </summary>
-    public DateTime UpdatedAt { get; protected internal set; }
-
-    /// <summary>
-    /// Метод для установки начальных значений при создании сущности.
-    /// Вызывается один раз в конструкторе.
-    /// </summary>
-    protected void SetInitialValues()
-    {
-        Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Метод для обновления метки времени при изменении сущности.
-    /// </summary>
-    protected void UpdateTimestamp()
-    {
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Очищает доменные события после публикации.
-    /// Переопределяется в наследниках для очистки коллекции событий.
-    /// </summary>
-    public virtual void ClearDomainEvents()
-    {
-        // Базовая реализация — ничего не делает
-    }
+    public DateTime UpdatedAt { get; protected internal set; } = DateTime.UtcNow;
 }

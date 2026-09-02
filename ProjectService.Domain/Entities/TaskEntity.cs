@@ -44,7 +44,6 @@ public class TaskEntity : BaseEntity
     /// </summary>
     public TaskEntity()
     {
-        SetInitialValues();
         Title = string.Empty;
         Status = Enums.TaskStatus.Todo;
         Priority = TaskPriority.Medium;
@@ -59,7 +58,6 @@ public class TaskEntity : BaseEntity
     /// <param name="priority">Приоритет задачи</param>
     public TaskEntity(Project project, string title, string? description, TaskPriority priority)
     {
-        SetInitialValues();
         ProjectId = project.Id;
         Project = project;
         Title = title;
@@ -80,7 +78,6 @@ public class TaskEntity : BaseEntity
     {
         Title = title;
         Description = description;
-        UpdateTimestamp();
     }
 
     /// <summary>
@@ -90,7 +87,6 @@ public class TaskEntity : BaseEntity
     public void UpdatePriority(TaskPriority priority)
     {
         Priority = priority;
-        UpdateTimestamp();
     }
 
     /// <summary>
@@ -99,7 +95,6 @@ public class TaskEntity : BaseEntity
     public void Start()
     {
         Status = Enums.TaskStatus.InProgress;
-        UpdateTimestamp();
     }
 
     /// <summary>
@@ -108,7 +103,6 @@ public class TaskEntity : BaseEntity
     public void Complete()
     {
         Status = Enums.TaskStatus.Done;
-        UpdateTimestamp();
         AddDomainEvent(new TaskCompletedEvent(this));
     }
 
@@ -118,7 +112,6 @@ public class TaskEntity : BaseEntity
     public void Cancel()
     {
         Status = Enums.TaskStatus.Cancelled;
-        UpdateTimestamp();
     }
 
     /// <summary>
@@ -127,7 +120,6 @@ public class TaskEntity : BaseEntity
     public void Reset()
     {
         Status = Enums.TaskStatus.Todo;
-        UpdateTimestamp();
     }
 
     /// <summary>

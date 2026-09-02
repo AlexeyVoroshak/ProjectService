@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ProjectService.Domain.Entities;
+using ProjectService.Domain.Enums;
 
 namespace ProjectService.Infrastructure.Data.Configurations;
 
@@ -34,7 +35,9 @@ public static class ProjectConfiguration
         // Настраиваем свойство Status — обязательное, хранится как integer
         builder.Property(p => p.Status)
             .IsRequired()
-            .HasConversion<int>();
+            .HasConversion(
+                v => v.Value,
+                v => ProjectStatus.FromValue(v));
 
         // Настраиваем свойство CreatedAt
         builder.Property(p => p.CreatedAt)

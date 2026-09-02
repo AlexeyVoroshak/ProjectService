@@ -22,8 +22,7 @@ public class UnitOfWork : IUnitOfWork
     /// <summary>
     /// Получает DbSet для работы с сущностями типа T.
     /// </summary>
-    public DbSet<T> Set<T>() where T : class
-        => _context.Set<T>();
+    public DbSet<T> Set<T>() where T : class => _context.Set<T>();
 
     /// <summary>
     /// Получает DbContext для доступа к ChangeTracker.
