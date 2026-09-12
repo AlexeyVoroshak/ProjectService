@@ -42,7 +42,7 @@ builder.Services.AddSwaggerGen();
 // Регистрация Application layer
 // ============================================================
 // Включает MediatR (CQRS), FluentValidation и pipeline behavior
-builder.Services.AddApplicationServices();
+builder.Services.AddApplicationServices(builder.Configuration);
 
 // ============================================================
 // Регистрация Infrastructure layer

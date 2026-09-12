@@ -1,11 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ProjectService.Application.Services;
 using ProjectService.Domain.Repositories;
 using ProjectService.Infrastructure.Data;
 using ProjectService.Infrastructure.Messaging;
 using ProjectService.Infrastructure.Repositories;
+using ProjectService.Infrastructure.Services;
+using StackExchange.Redis;
 
 namespace ProjectService.Infrastructure;
 
@@ -44,6 +47,30 @@ public static class DependencyInjection
         // Регистрируем репозитории (Scoped — создаются в рамках одного запроса)
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IOutboxRepository, OutboxRepository>();
+
+        // Регистрируем Redis кэш (опционально)
+        var redisConnection = configuration.GetConnectionString("RedisConnection");
+        if (!string.IsNullOrEmpty(redisConnection))
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnection;
+                options.InstanceName = "ProjectService:";
+            });
+
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<IConnectionMultiplexer>>();
+                return ConnectionMultiplexer.Connect(redisConnection);
+            });
+
+            services.AddSingleton<ICacheService, RedisCacheService>();
+
+            // Регистрируем фоновую службу для инициализации Redis
+            var redisDatabaseIndex = configuration.GetValue<int>("Redis:DatabaseIndex", 0);
+            services.AddSingleton(sp => new RedisOptions { DatabaseIndex = redisDatabaseIndex });
+            services.AddHostedService<RedisInitializationService>();
+        }
 
         // Регистрируем менеджер Docker Kafka (запускается первым — проверяет и запускает кластер)
         var dockerKafkaOptions = new DockerKafkaOptions();

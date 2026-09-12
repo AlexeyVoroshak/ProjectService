@@ -59,6 +59,17 @@ services:
       - projectservice-network
 
   # ============================================================
+  # Redis — кэширование данных
+  # ============================================================
+  redis:
+    image: redis:7-alpine
+    container_name: projectservice-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - projectservice-network
+
+  # ============================================================
   # ProjectService.API — основное веб-приложение
   # ============================================================
   api:
@@ -71,12 +82,15 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+      redis:
+        condition: service_started
     ports:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=projectservice;Username=postgres;Password=postgres
       - KafkaOutbox__BootstrapServers=kafka:9092
+      - RedisConnection__DefaultConnection=redis:6379
     networks:
       - projectservice-network
 

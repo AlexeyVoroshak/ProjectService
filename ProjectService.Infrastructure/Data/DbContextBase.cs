@@ -1,20 +1,20 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ProjectService.Domain.Entities;
 
-namespace ProjectService.Application.Services;
+namespace ProjectService.Infrastructure.Data;
 
 /// <summary>
-/// Контекст EF Core для работы с БД.
+/// Базовый контекст EF Core для работы с БД.
 /// Содержит DbSet для сущностей доменной модели и Outbox сообщений.
-/// Переопределяется в Infrastructure слое для регистрации конкретных DbSet.
+/// Переопределяется в ApplicationDbContext для регистрации конкретных DbSet.
 /// </summary>
-public abstract class ApplicationDBContext : DbContext
+public abstract class DbContextBase : DbContext
 {
     /// <summary>
     /// Конструктор с параметром конфигурации.
     /// </summary>
     /// <param name="options">Настройки контекста</param>
-    protected ApplicationDBContext(DbContextOptions options) : base(options) { }
+    protected DbContextBase(DbContextOptions options) : base(options) { }
 
     /// <summary>
     /// Набор сущностей OutboxMessage для управления сообщениями Outbox.

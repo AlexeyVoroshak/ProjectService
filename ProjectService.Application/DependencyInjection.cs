@@ -1,7 +1,9 @@
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectService.Application.Behaviors;
+using ProjectService.Application.Services;
 
 namespace ProjectService.Application;
 
@@ -14,8 +16,9 @@ public static class DependencyInjection
     /// Регистрирует все сервисы Application layer.
     /// </summary>
     /// <param name="services">Коллекция сервисов</param>
+    /// <param name="configuration">Конфигурация приложения</param>
     /// <returns>Ссылка на IServiceCollection для цепочки вызовов</returns>
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration? configuration = null)
     {
         // Регистрируем MediatR — все обработчики команд/запросов и pipeline behavior
         services.AddMediatR(cfg =>

@@ -9,7 +9,7 @@ namespace ProjectService.Infrastructure.Data;
 /// Контекст EF Core для работы с базой данных проекта.
 /// Содержит DbSet для всех сущностей доменной модели и Outbox сообщений.
 /// </summary>
-public class ApplicationDbContext : ApplicationDBContext
+public class ApplicationDbContext : DbContextBase
 {
     /// <summary>
     /// Конструктор с параметром конфигурации.

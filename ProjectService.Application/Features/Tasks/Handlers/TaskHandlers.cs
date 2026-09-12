@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ProjectService.Application.DTOs;
 using ProjectService.Application.Features.Tasks.Commands;
 using ProjectService.Application.Features.Tasks.Queries;
+using ProjectService.Application.Services;
 using ProjectService.Domain.Repositories;
 
 namespace ProjectService.Application.Features.Tasks.Handlers;
@@ -14,11 +15,13 @@ namespace ProjectService.Application.Features.Tasks.Handlers;
 public class CreateTaskHandler : IRequestHandler<CreateTaskCommand, TaskDto>
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly ICacheService? _cacheService;
     private readonly ILogger<CreateTaskHandler> _logger;
 
-    public CreateTaskHandler(IProjectRepository projectRepository, ILogger<CreateTaskHandler> logger)
+    public CreateTaskHandler(IProjectRepository projectRepository, ICacheService? cacheService, ILogger<CreateTaskHandler> logger)
     {
         _projectRepository = projectRepository;
+        _cacheService = cacheService;
         _logger = logger;
     }
 
@@ -31,6 +34,12 @@ public class CreateTaskHandler : IRequestHandler<CreateTaskCommand, TaskDto>
 
         project.AddTask(request.Title, request.Priority, request.Description);
 
+        // Инвалидируем кэш задач проекта
+        if (_cacheService != null)
+        {
+            await _cacheService.RemoveByPatternAsync($"tasks:project:{request.ProjectId}");
+        }
+
         return TaskDto.FromEntity(project.Tasks.Last());
     }
 }
@@ -41,11 +50,13 @@ public class CreateTaskHandler : IRequestHandler<CreateTaskCommand, TaskDto>
 public class UpdateTaskHandler : IRequestHandler<UpdateTaskCommand, Unit>
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly ICacheService? _cacheService;
     private readonly ILogger<UpdateTaskHandler> _logger;
 
-    public UpdateTaskHandler(IProjectRepository projectRepository, ILogger<UpdateTaskHandler> logger)
+    public UpdateTaskHandler(IProjectRepository projectRepository, ICacheService? cacheService, ILogger<UpdateTaskHandler> logger)
     {
         _projectRepository = projectRepository;
+        _cacheService = cacheService;
         _logger = logger;
     }
 
@@ -61,6 +72,13 @@ public class UpdateTaskHandler : IRequestHandler<UpdateTaskCommand, Unit>
 
         task.UpdateDetails(request.Title, request.Description);
 
+        // Инвалидируем кэш
+        if (_cacheService != null)
+        {
+            await _cacheService.RemoveAsync($"task:{request.Id}");
+            await _cacheService.RemoveByPatternAsync($"tasks:project:{project.Id}");
+        }
+
         return Unit.Value;
     }
 }
@@ -71,11 +89,13 @@ public class UpdateTaskHandler : IRequestHandler<UpdateTaskCommand, Unit>
 public class DeleteTaskHandler : IRequestHandler<DeleteTaskCommand, Unit>
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly ICacheService? _cacheService;
     private readonly ILogger<DeleteTaskHandler> _logger;
 
-    public DeleteTaskHandler(IProjectRepository projectRepository, ILogger<DeleteTaskHandler> logger)
+    public DeleteTaskHandler(IProjectRepository projectRepository, ICacheService? cacheService, ILogger<DeleteTaskHandler> logger)
     {
         _projectRepository = projectRepository;
+        _cacheService = cacheService;
         _logger = logger;
     }
 
@@ -91,6 +111,13 @@ public class DeleteTaskHandler : IRequestHandler<DeleteTaskCommand, Unit>
 
         ((List<Domain.Entities.TaskEntity>)project.Tasks).Remove(task);
 
+        // Инвалидируем кэш
+        if (_cacheService != null)
+        {
+            await _cacheService.RemoveAsync($"task:{request.Id}");
+            await _cacheService.RemoveByPatternAsync($"tasks:project:{project.Id}");
+        }
+
         return Unit.Value;
     }
 }
@@ -101,11 +128,13 @@ public class DeleteTaskHandler : IRequestHandler<DeleteTaskCommand, Unit>
 public class GetTaskByIdHandler : IRequestHandler<GetTaskByIdQuery, TaskDto>
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly ICacheService? _cacheService;
     private readonly ILogger<GetTaskByIdHandler> _logger;
 
-    public GetTaskByIdHandler(IProjectRepository projectRepository, ILogger<GetTaskByIdHandler> logger)
+    public GetTaskByIdHandler(IProjectRepository projectRepository, ICacheService? cacheService, ILogger<GetTaskByIdHandler> logger)
     {
         _projectRepository = projectRepository;
+        _cacheService = cacheService;
         _logger = logger;
     }
 
@@ -113,11 +142,32 @@ public class GetTaskByIdHandler : IRequestHandler<GetTaskByIdQuery, TaskDto>
     {
         _logger.LogInformation("Получение задачи: {Id}", request.Id);
 
+        var cacheKey = $"task:{request.Id}";
+
+        // Пытаемся получить из кэша
+        if (_cacheService != null)
+        {
+            var cached = await _cacheService.GetAsync<TaskDto>(cacheKey);
+            if (cached != null)
+            {
+                _logger.LogInformation("Задача получена из кэша: {Id}", request.Id);
+                return cached;
+            }
+        }
+
         var projects = await _projectRepository.GetAllAsync(cancellationToken: cancellationToken);
         var task = projects.SelectMany(p => p.Tasks).FirstOrDefault(t => t.Id == request.Id)
             ?? throw new KeyNotFoundException($"Задача с ID {request.Id} не найдена");
 
-        return TaskDto.FromEntity(task);
+        var result = TaskDto.FromEntity(task);
+
+        // Сохраняем в кэш на 10 минут
+        if (_cacheService != null)
+        {
+            await _cacheService.SetAsync(cacheKey, result, 10);
+        }
+
+        return result;
     }
 }
 
@@ -127,11 +177,13 @@ public class GetTaskByIdHandler : IRequestHandler<GetTaskByIdQuery, TaskDto>
 public class GetTasksByProjectHandler : IRequestHandler<GetTasksByProjectQuery, List<TaskDto>>
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly ICacheService? _cacheService;
     private readonly ILogger<GetTasksByProjectHandler> _logger;
 
-    public GetTasksByProjectHandler(IProjectRepository projectRepository, ILogger<GetTasksByProjectHandler> logger)
+    public GetTasksByProjectHandler(IProjectRepository projectRepository, ICacheService? cacheService, ILogger<GetTasksByProjectHandler> logger)
     {
         _projectRepository = projectRepository;
+        _cacheService = cacheService;
         _logger = logger;
     }
 
@@ -139,9 +191,30 @@ public class GetTasksByProjectHandler : IRequestHandler<GetTasksByProjectQuery, 
     {
         _logger.LogInformation("Получение задач проекта: {ProjectId}", request.ProjectId);
 
+        var cacheKey = $"tasks:project:{request.ProjectId}";
+
+        // Пытаемся получить из кэша
+        if (_cacheService != null)
+        {
+            var cached = await _cacheService.GetAsync<List<TaskDto>>(cacheKey);
+            if (cached != null)
+            {
+                _logger.LogInformation("Задачи проекта получены из кэша: {ProjectId}", request.ProjectId);
+                return cached;
+            }
+        }
+
         var project = await _projectRepository.GetByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Проект с ID {request.ProjectId} не найден");
 
-        return project.Tasks.Select(TaskDto.FromEntity).ToList();
+        var result = project.Tasks.Select(TaskDto.FromEntity).ToList();
+
+        // Сохраняем в кэш на 5 минут
+        if (_cacheService != null)
+        {
+            await _cacheService.SetAsync(cacheKey, result, 5);
+        }
+
+        return result;
     }
 }
