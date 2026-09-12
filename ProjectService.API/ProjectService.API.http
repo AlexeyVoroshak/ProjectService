@@ -1,6 +1,131 @@
 @ProjectService.API_HostAddress = http://localhost:5088
 
-GET {{ProjectService.API_HostAddress}}/weatherforecast/
+###############################################
+# Projects API (/api/projects)
+###############################################
+
+### GET /api/projects — получить список всех проектов (по умолчанию skip=0, take=50)
+GET {{ProjectService.API_HostAddress}}/api/projects
 Accept: application/json
+
+###
+
+### GET /api/projects?skip=0&take=10 — получить проекты с пагинацией
+GET {{ProjectService.API_HostAddress}}/api/projects?skip=0&take=10
+Accept: application/json
+
+###
+
+### POST /api/projects — создать проект (активный)
+POST {{ProjectService.API_HostAddress}}/api/projects
+Content-Type: application/json
+
+{
+  "name": "Мобильное приложение",
+  "description": "Разработка мобильного приложения для клиентов"
+}
+
+###
+
+### POST /api/projects — создать проект без описания
+POST {{ProjectService.API_HostAddress}}/api/projects
+Content-Type: application/json
+
+{
+  "name": "Веб-портал"
+}
+
+###
+
+### GET /api/projects/{id} — получить проект по ID
+# Замените GUID на реальный идентификатор, полученный из ответа POST
+GET {{ProjectService.API_HostAddress}}/api/projects/00000000-0000-0000-0000-000000000001
+Accept: application/json
+
+###
+
+### PUT /api/projects/{id} — обновить проект
+# Replace {id} with an actual project GUID from GET response
+PUT {{ProjectService.API_HostAddress}}/api/projects/00000000-0000-0000-0000-000000000001
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-0000-0000-000000000001",
+  "name": "Мобильное приложение v2",
+  "description": "Обновленное описание проекта"
+}
+
+###
+
+### DELETE /api/projects/{id} — удалить проект (мягкое удаление)
+# Replace {id} with an actual project GUID from GET response
+DELETE {{ProjectService.API_HostAddress}}/api/projects/00000000-0000-0000-0000-000000000001
+
+###
+
+###############################################
+# Tasks API (/api/tasks)
+###############################################
+
+### GET /api/tasks — получить все задачи (без пагинации, TODO добавить)
+GET {{ProjectService.API_HostAddress}}/api/tasks
+Accept: application/json
+
+###
+
+### POST /api/tasks — создать задачу для проекта
+POST {{ProjectService.API_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "projectId": "00000000-0000-0000-0000-000000000001",
+  "title": "Настроить CI/CD",
+  "description": "Настроить пайплайн сборки и деплоя",
+  "priority": 3
+}
+
+###
+
+### POST /api/tasks — создать задачу с приоритетом Low (по умолчанию Medium)
+POST {{ProjectService.API_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "projectId": "00000000-0000-0000-0000-000000000001",
+  "title": "Написать документацию"
+}
+
+###
+
+### GET /api/tasks/{id} — получить задачу по ID
+# Replace {id} with an actual task GUID from GET /tasks response
+GET {{ProjectService.API_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000002
+Accept: application/json
+
+###
+
+### GET /api/tasks/by-project/{projectId} — получить все задачи проекта
+# Replace projectId with an actual project GUID
+GET {{ProjectService.API_HostAddress}}/api/tasks/by-project/00000000-0000-0000-0000-000000000001
+Accept: application/json
+
+###
+
+### PUT /api/tasks/{id} — обновить задачу
+# Replace {id} with an actual task GUID from GET /tasks response
+PUT {{ProjectService.API_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000002
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-0000-0000-000000000002",
+  "title": "Настроить CI/CD пайплайн",
+  "description": "Настроить GitHub Actions для сборки и деплоя"
+}
+
+###
+
+### DELETE /api/tasks/{id} — удалить задачу
+# Replace {id} with an actual task GUID from GET /tasks response
+DELETE {{ProjectService.API_HostAddress}}/api/tasks/00000000-0000-0000-0000-000000000002
 
 ###
