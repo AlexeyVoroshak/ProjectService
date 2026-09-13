@@ -9,5 +9,8 @@
 **/node_modules/
 **/logs/
 **/*.log
+**/.idea/
+**/.gigacode/
+**/.gigaide/
 docker-compose.override.yml
 .dockerignore
